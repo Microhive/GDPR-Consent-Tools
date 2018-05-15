@@ -13,11 +13,9 @@ namespace GDPR
     {
         private void GeneratePolicies(List<Policy> list)
         {
-            list.Add(new Policy(purpose: "Marketing", pii: ""));
-            list.Add(new Policy(purpose: "Marketing", pii: ""));
-            list.Add(new Policy(purpose: "Security", pii: ""));
             list.Add(new Policy(purpose: "Marketing", pii: "Name, DateOfBirth, CPR"));
-            list.Add(new Policy(purpose: "Change", pii: "Name, DateOfBirth, CPR"));
+            list.Add(new Policy(purpose: "Marketing", pii: "Name, DateOfBirth, CPR"));
+            list.Add(new Policy(purpose: "Security", pii: "Name, DateOfBirth, CPR"));
         }
 
         public List<Policy> GetPolicies()
