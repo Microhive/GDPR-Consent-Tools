@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2015
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityTest", "IdentityTest\IdentityTest.csproj", "{70ABDE09-F05C-40DD-9801-4AED01AF2856}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GDPR", "GDPR\GDPR.csproj", "{D55183E1-EB80-40DF-AD85-E3847671F41F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{70ABDE09-F05C-40DD-9801-4AED01AF2856}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70ABDE09-F05C-40DD-9801-4AED01AF2856}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70ABDE09-F05C-40DD-9801-4AED01AF2856}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70ABDE09-F05C-40DD-9801-4AED01AF2856}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D55183E1-EB80-40DF-AD85-E3847671F41F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D55183E1-EB80-40DF-AD85-E3847671F41F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D55183E1-EB80-40DF-AD85-E3847671F41F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D55183E1-EB80-40DF-AD85-E3847671F41F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0E4BF90D-03EE-4588-BB9F-59F0CEA5713A}
+	EndGlobalSection
+EndGlobal
