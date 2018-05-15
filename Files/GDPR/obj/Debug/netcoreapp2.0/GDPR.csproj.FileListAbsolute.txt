@@ -1,0 +1,15 @@
+C:\repos\GDPRRoslynAnalyzerTestProjects\GDPR\bin\Debug\netcoreapp2.0\GDPR.deps.json
+C:\repos\GDPRRoslynAnalyzerTestProjects\GDPR\bin\Debug\netcoreapp2.0\GDPR.dll
+C:\repos\GDPRRoslynAnalyzerTestProjects\GDPR\bin\Debug\netcoreapp2.0\GDPR.pdb
+C:\repos\GDPRRoslynAnalyzerTestProjects\GDPR\obj\Debug\netcoreapp2.0\GDPR.csproj.CoreCompileInputs.cache
+C:\repos\GDPRRoslynAnalyzerTestProjects\GDPR\obj\Debug\netcoreapp2.0\GDPR.AssemblyInfoInputs.cache
+C:\repos\GDPRRoslynAnalyzerTestProjects\GDPR\obj\Debug\netcoreapp2.0\GDPR.AssemblyInfo.cs
+C:\repos\GDPRRoslynAnalyzerTestProjects\GDPR\obj\Debug\netcoreapp2.0\GDPR.dll
+C:\repos\GDPRRoslynAnalyzerTestProjects\GDPR\obj\Debug\netcoreapp2.0\GDPR.pdb
+C:\repos\GDPRRoslynAnalyzerTestProjects\GDPR\obj\Debug\netcoreapp2.0\GDPR.csprojResolveAssemblyReference.cache
+C:\repos\eShopOnWeb\src\GDPR\obj\Debug\netcoreapp2.0\GDPR.csprojResolveAssemblyReference.cache
+C:\repos\eShopOnWeb\src\GDPR\obj\Debug\netcoreapp2.0\GDPR.csproj.CoreCompileInputs.cache
+C:\repos\eShopOnWeb\src\GDPR\obj\Debug\netcoreapp2.0\GDPR.AssemblyInfoInputs.cache
+C:\repos\eShopOnWeb\src\GDPR\obj\Debug\netcoreapp2.0\GDPR.AssemblyInfo.cs
+C:\repos\eShopOnWeb\src\GDPR\obj\Debug\netcoreapp2.0\GDPR.dll
+C:\repos\eShopOnWeb\src\GDPR\obj\Debug\netcoreapp2.0\GDPR.pdb
