@@ -3,27 +3,27 @@ using System.Threading.Tasks;
 using GDPR.Attributes;
 using GDPR.Core;
 using IdentityTest.Data;
+using IdentityTest.Models;
 using IdentityTest.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IdentityTest.Controllers
 {
-    public class MarketingController : Controller
+    public class NotificationController : Controller
     {
         private readonly ApplicationDbContext _dbContext;
         private readonly IEmailSender _emailSender;
 
-        public MarketingController(
+        public NotificationController(
             ApplicationDbContext dbContext,
             IEmailSender emailSender)
         {
-            _dbContext = dbContext;
+            _dbContext = dbContext; 
             _emailSender = emailSender;
         }
 
-        [HttpGet]
-        [Purpose("Marketing", "")]
+        [Purpose("Marketing", "Name, DateOfBirth, CPR")]
         public async Task<string[]> MarketingNotification()
         {
             var users = _dbContext.ApplicationUserPurpose("Marketing").ToList();
@@ -31,15 +31,14 @@ namespace IdentityTest.Controllers
             {
                 await _emailSender.SendEmailAsync(
                     user.Email, 
-                    "Marketing Email Subject", 
+                    "Marketing Email Subject",  
                     "Marketing Email Message!");
             }
 
             return users.Select(x => x.Email).ToArray();
         }
 
-        [HttpGet]
-        [Purpose("Security", "")]
+        [Purpose("Security", "Name, DateOfBirth, CPR")]
         public async Task<string[]> SecurityNotification()
         {
             var users = _dbContext.ApplicationUserPurpose("Security").ToList();

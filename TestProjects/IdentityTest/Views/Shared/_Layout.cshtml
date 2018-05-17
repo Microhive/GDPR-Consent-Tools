@@ -34,8 +34,8 @@
                     <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
                     <li><a asp-area="" asp-controller="GDPR" asp-action="Index">GDPR Policies</a></li>
-                    <li><a asp-area="" asp-controller="Marketing" asp-action="MarketingNotification">Marketing Emails!</a></li>
-                    <li><a asp-area="" asp-controller="Marketing" asp-action="SecurityNotification">Security Emails!</a></li>
+                    <li><a asp-area="" asp-controller="Notification" asp-action="MarketingNotification">Marketing Emails!</a></li>
+                    <li><a asp-area="" asp-controller="Notification" asp-action="SecurityNotification">Security Emails!</a></li>
                 </ul>
                 @await Html.PartialAsync("_LoginPartial")
             </div>

@@ -1,0 +1,307 @@
+[1mdiff --git a/GDPRConsentTools/GDPRConsentTools/ContainsPII.cs b/GDPRConsentTools/GDPRConsentTools/ContainsPII.cs[m
+[1mindex 9857030..7eb5c1d 100644[m
+[1m--- a/GDPRConsentTools/GDPRConsentTools/ContainsPII.cs[m
+[1m+++ b/GDPRConsentTools/GDPRConsentTools/ContainsPII.cs[m
+[36m@@ -9,10 +9,12 @@[m [musing System.Collections.Generic;[m
+ using System.Collections.Immutable;[m
+ using System.Text;[m
+ using System.Linq;[m
+[32m+[m[32musing Microsoft.CodeAnalysis.CodeFixes;[m
+[32m+[m[32musing System.Composition;[m
+ [m
+ namespace GDPRConsentTools[m
+ {[m
+[31m-    [DiagnosticAnalyzer(LanguageNames.CSharp)][m
+[32m+[m[32m    [DiagnosticAnalyzer("", LanguageNames.CSharp)][m
+     public class ContainsPII : DiagnosticAnalyzer[m
+     {[m
+         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DiagnosticDescriptors.GDPR1004_MethodAccessingPIIMustHavePurpose);[m
+[36m@@ -59,9 +61,14 @@[m [mnamespace GDPRConsentTools[m
+                         continue;[m
+                     }[m
+ [m
+[31m-                    if (typeSymbol.HasAttribute(piiTypeSymbol))[m
+[32m+[m[32m                    INamedTypeSymbol namedType = (INamedTypeSymbol)typeSymbol;[m
+[32m+[m[32m                    ITypeSymbol type = namedType.TypeArguments.FirstOrDefault();[m
+[32m+[m
+[32m+[m[32m                    var symbol = type ?? typeSymbol;[m
+[32m+[m
+[32m+[m[32m                    if (symbol.HasAttribute(piiTypeSymbol))[m
+                     {[m
+[31m-                        foreach (var declaredAttribute in typeSymbol.GetAttributes())[m
+[32m+[m[32m                        foreach (var declaredAttribute in symbol.GetAttributes())[m
+                         {[m
+                             if (declaredAttribute.AttributeClass == piiTypeSymbol)[m
+                             {[m
+[36m@@ -77,6 +84,11 @@[m [mnamespace GDPRConsentTools[m
+                         }[m
+                     }[m
+                 }[m
+[32m+[m
+[32m+[m[32m                if (pii.Count() == 0)[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    return;[m
+[32m+[m[32m                }[m
+                 [m
+                 var builder = ImmutableDictionary.CreateBuilder<string, string>();[m
+                 builder["pii"] = string.Join(",", pii);[m
+[1mdiff --git a/GDPRConsentTools/GDPRConsentTools/ContainsPIICodeFix.cs b/GDPRConsentTools/GDPRConsentTools/ContainsPIICodeFix.cs[m
+[1mindex 89d4438..8be7573 100644[m
+[1m--- a/GDPRConsentTools/GDPRConsentTools/ContainsPIICodeFix.cs[m
+[1m+++ b/GDPRConsentTools/GDPRConsentTools/ContainsPIICodeFix.cs[m
+[36m@@ -25,27 +25,31 @@[m [mnamespace GDPRConsentTools[m
+         {[m
+             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);[m
+ [m
+[31m-            var diagnostic = context.Diagnostics.First();[m
+[31m-            var diagnosticSpan = diagnostic.Location.SourceSpan;[m
+[32m+[m[32m            var diagnostics = context.Diagnostics;[m
+ [m
+[31m-            // Find the type declaration identified by the diagnostic.[m
+[31m-            var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().First();[m
+[32m+[m[32m            foreach (var diagnostic in diagnostics)[m
+[32m+[m[32m            {[m
+[32m+[m[32m                var diagnosticSpan = diagnostic.Location.SourceSpan;[m
+ [m
+[31m-            var syntaxTree = await context.Document.GetSyntaxTreeAsync(context.CancellationToken);[m
+[31m-            var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken);[m
+[31m-            var compilation = semanticModel.Compilation;[m
+[32m+[m[32m                // Find the type declaration identified by the diagnostic.[m
+[32m+[m[32m                var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().First();[m
+ [m
+[31m-            INamedTypeSymbol purposeTypeSymbol = compilation.GetTypeByMetadataName(TypeNames.PurposeAttribute);[m
+[31m-            var method = semanticModel.GetDeclaredSymbol(declaration, context.CancellationToken);[m
+[31m-            var attributes = method.GetAttributes();[m
+[32m+[m[32m                var syntaxTree = await context.Document.GetSyntaxTreeAsync(context.CancellationToken);[m
+[32m+[m[32m                var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken);[m
+[32m+[m[32m                var compilation = semanticModel.Compilation;[m
+ [m
+[31m-            var pii = context.Diagnostics.FirstOrDefault().Properties["pii"];[m
+[32m+[m[32m                INamedTypeSymbol purposeTypeSymbol = compilation.GetTypeByMetadataName(TypeNames.PurposeAttribute);[m
+[32m+[m[32m                var method = semanticModel.GetDeclaredSymbol(declaration, context.CancellationToken);[m
+[32m+[m[32m                var attributes = method.GetAttributes();[m
+ [m
+[31m-            context.RegisterCodeFix([m
+[31m-                CodeAction.Create([m
+[31m-                    title: DiagnosticDescriptors.GDPR1004_MethodAccessingPIIMustHavePurpose.Title.ToString(),[m
+[31m-                    createChangedDocument: c => UpdateAttribute(context.Document, declaration, "", pii, c)),[m
+[31m-                diagnostic);[m
+[32m+[m[32m                var pii = context.Diagnostics.FirstOrDefault().Properties["pii"];[m
+[32m+[m
+[32m+[m[32m                context.RegisterCodeFix([m
+[32m+[m[32m                    CodeAction.Create([m
+[32m+[m[32m                        title: DiagnosticDescriptors.GDPR1004_MethodAccessingPIIMustHavePurpose.Title.ToString(),[m
+[32m+[m[32m                        createChangedDocument: c => UpdateAttribute(context.Document, declaration, "", pii, c)),[m
+[32m+[m[32m                    diagnostic);[m
+[32m+[m[32m            }[m
+         }[m
+ [m
+         private async Task<Document> UpdateAttribute(Document document, MethodDeclarationSyntax declaration, string purpose, string pii, CancellationToken cancellationToken)[m
+[1mdiff --git a/GDPRConsentTools/GDPRConsentTools/GDPRConsentTools.csproj b/GDPRConsentTools/GDPRConsentTools/GDPRConsentTools.csproj[m
+[1mindex e1043a0..d9d6ae7 100644[m
+[1m--- a/GDPRConsentTools/GDPRConsentTools/GDPRConsentTools.csproj[m
+[1m+++ b/GDPRConsentTools/GDPRConsentTools/GDPRConsentTools.csproj[m
+[36m@@ -8,23 +8,27 @@[m
+   [m
+   <PropertyGroup>[m
+     <PackageId>GDPRConsentTools</PackageId>[m
+[31m-    <PackageVersion>1.0.0.0</PackageVersion>[m
+[31m-    <Authors>micro</Authors>[m
+[32m+[m[32m    <PackageVersion>1.4.0.0</PackageVersion>[m
+[32m+[m[32m    <Authors>Eiler Ka-Nid Yodla-Ong Poulsen</Authors>[m
+     <PackageLicenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</PackageLicenseUrl>[m
+[31m-    <PackageProjectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</PackageProjectUrl>[m
+[32m+[m[32m    <PackageProjectUrl>https://github.com/Microhive/GDPRRoslynAnalyzer</PackageProjectUrl>[m
+     <PackageIconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</PackageIconUrl>[m
+[31m-    <RepositoryUrl>http://REPOSITORY_URL_HERE_OR_DELETE_THIS_LINE</RepositoryUrl>[m
+[32m+[m[32m    <RepositoryUrl>https://github.com/Microhive/GDPRRoslynAnalyzer</RepositoryUrl>[m
+     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>[m
+[31m-    <Description>GDPRConsentTools</Description>[m
+[32m+[m[32m    <Description>This is a universty project in which I have attempted to develop a Roslyn Analyzer to assist in discovering business processes throughout a solution, and help annotate their purposes. This is then subsequently used to generate a consent list using Roslyn Code Fix analyzer.</Description>[m
+     <PackageReleaseNotes>Summary of changes made in this release of the package.</PackageReleaseNotes>[m
+[31m-    <Copyright>Copyright</Copyright>[m
+[31m-    <PackageTags>GDPRConsentTools, analyzers</PackageTags>[m
+[32m+[m[32m    <Copyright>MIT</Copyright>[m
+[32m+[m[32m    <PackageTags>GDPR Consent Tools, Roslyn, Analyzers</PackageTags>[m
+     <NoPackageAnalysis>true</NoPackageAnalysis>[m
+[32m+[m[32m    <Version>1.4.0</Version>[m
+   </PropertyGroup>[m
+   [m
+   <ItemGroup>[m
+[32m+[m[32m    <Compile Remove="bin\**" />[m
+     <Compile Remove="Demo\**" />[m
+[32m+[m[32m    <EmbeddedResource Remove="bin\**" />[m
+     <EmbeddedResource Remove="Demo\**" />[m
+[32m+[m[32m    <None Remove="bin\**" />[m
+     <None Remove="Demo\**" />[m
+   </ItemGroup>[m
+   [m
+[36m@@ -46,7 +50,6 @@[m
+ [m
+   <ItemGroup>[m
+     <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="" />[m
+[31m-    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />[m
+   </ItemGroup>[m
+ [m
+ </Project>[m
+[1mdiff --git a/GDPRConsentTools/GDPRConsentTools/ResourceCodeFixProvider.cs b/GDPRConsentTools/GDPRConsentTools/ResourceCodeFixProvider.cs[m
+[1mindex 69a51f6..db497b6 100644[m
+[1m--- a/GDPRConsentTools/GDPRConsentTools/ResourceCodeFixProvider.cs[m
+[1m+++ b/GDPRConsentTools/GDPRConsentTools/ResourceCodeFixProvider.cs[m
+[36m@@ -16,7 +16,7 @@[m [mnamespace GDPRConsentTools[m
+     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ResourceCodeFixProvider)), Shared][m
+     public class ResourceCodeFixProvider : CodeFixProvider[m
+     {[m
+[31m-        private const string title = "Add Purpose to Container";[m
+[32m+[m[32m        private const string title = "Add Purpose to Policies";[m
+ [m
+         public sealed override ImmutableArray<string> FixableDiagnosticIds[m
+         {[m
+[36m@@ -31,76 +31,80 @@[m [mnamespace GDPRConsentTools[m
+ [m
+         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)[m
+         {[m
+[31m-            var argument = context.Diagnostics.FirstOrDefault().Properties;[m
+[31m-            var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);[m
+[31m-            var project = context.Document.Project;[m
+[31m-            var solution = await project.GetCompilationAsync(context.CancellationToken).ConfigureAwait(false);[m
+[32m+[m[32m            var diagnostics = context.Diagnostics;[m
+ [m
+[31m-            if (project == null)[m
+[32m+[m[32m            foreach (var diagnostic in diagnostics)[m
+             {[m
+[31m-                return;[m
+[32m+[m[32m                var argument = diagnostic.Properties;[m
+[32m+[m[32m                var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);[m
+[32m+[m[32m                var project = context.Document.Project;[m
+[32m+[m[32m                var solution = await project.GetCompilationAsync(context.CancellationToken).ConfigureAwait(false);[m
+[32m+[m
+[32m+[m[32m                if (project == null)[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    return;[m
+[32m+[m[32m                }[m
+[32m+[m
+[32m+[m[32m                // TODO: Replace the following code with your own analysis, generating a CodeAction for each fix to suggest[m
+[32m+[m[32m                var diagnosticSpan = diagnostic.Location.SourceSpan;[m
+[32m+[m
+[32m+[m[32m                var documents = project.Documents;[m
+[32m+[m[32m                var document = context.Document.Project.Solution.Projects.SelectMany(x => x.Documents).FirstOrDefault(x => x.Name == "Policies.cs"); //documents.FirstOrDefault(x => x.Name == "GDPR.cs");[m
+[32m+[m
+[32m+[m[32m                if (document == null)[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    return;[m
+[32m+[m[32m                }[m
+[32m+[m
+[32m+[m[32m                var treeAsync = await document.GetSyntaxTreeAsync();[m
+[32m+[m[32m                var classes = treeAsync.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>();[m
+[32m+[m[32m                var semanticModel = await document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);[m
+[32m+[m
+[32m+[m[32m                if (semanticModel == null || classes == null)[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    return;[m
+[32m+[m[32m                }[m
+[32m+[m
+[32m+[m[32m                var symbols = classes.Select(x => semanticModel.GetDeclaredSymbol(x));[m
+[32m+[m[32m                if (!symbols.Any())[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    return;[m
+[32m+[m[32m                }[m
+[32m+[m
+[32m+[m[32m                INamedTypeSymbol typeNamePII = semanticModel.Compilation.GetTypeByMetadataName(TypeNames.PIIAttribute);[m
+[32m+[m[32m                INamedTypeSymbol typeNameInterface = semanticModel.Compilation.GetTypeByMetadataName(TypeNames.IGDPRPolicies);[m
+[32m+[m[32m                INamedTypeSymbol typeNameAttribute = semanticModel.Compilation.GetTypeByMetadataName(TypeNames.GDPRPoliciesAttribute);[m
+[32m+[m[32m                var gdprPolicyClass = symbols.FirstOrDefault(x => x.Interfaces.Contains(typeNameInterface) && x.HasAttribute(typeNameAttribute));[m
+[32m+[m[32m                if (gdprPolicyClass == null)[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    return;[m
+[32m+[m[32m                }[m
+[32m+[m
+[32m+[m[32m                var names = gdprPolicyClass.GetMembers().Cast<IMethodSymbol>();[m
+[32m+[m[32m                var types = gdprPolicyClass.GetTypeMembers();[m
+[32m+[m
+[32m+[m[32m                var method = names.FirstOrDefault(x => x.MetadataName == "GeneratePolicies");[m
+[32m+[m
+[32m+[m[32m                if (method == null)[m
+[32m+[m[32m                {[m
+[32m+[m[32m                    return;[m
+[32m+[m[32m                }[m
+[32m+[m
+[32m+[m[32m                var syntaxReference = method.DeclaringSyntaxReferences.First();[m
+[32m+[m[32m                var node = await syntaxReference.GetSyntaxAsync();[m
+[32m+[m[32m                var block = node.ChildNodes().OfType<BlockSyntax>().FirstOrDefault();[m
+[32m+[m
+[32m+[m[32m                var oldSpan = block.Span;[m
+[32m+[m[32m                var statement = ImmutableArray.Create(SyntaxFactory.ParseStatement($"list.Add(new Policy(purpose: \"{argument.GetValueOrDefault("purpose")}\", pii: \"{argument.GetValueOrDefault("pii")}\"));\n")).ToArray();[m
+[32m+[m[32m                var newBlock = block.AddStatements(statement);[m
+[32m+[m
+[32m+[m[32m                context.RegisterCodeFix([m
+[32m+[m[32m                    CodeAction.Create([m
+[32m+[m[32m                        title: title,[m
+[32m+[m[32m                        createChangedDocument: c => AddDocument(document, oldSpan, newBlock, c),[m
+[32m+[m[32m                        equivalenceKey: title),[m
+[32m+[m[32m                    diagnostic);[m
+             }[m
+[31m-[m
+[31m-            // TODO: Replace the following code with your own analysis, generating a CodeAction for each fix to suggest[m
+[31m-            var diagnostic = context.Diagnostics.First();[m
+[31m-            var diagnosticSpan = diagnostic.Location.SourceSpan;[m
+[31m-[m
+[31m-            var documents = project.Documents;[m
+[31m-            var document = context.Document.Project.Solution.Projects.SelectMany(x => x.Documents).FirstOrDefault(x => x.Name == "Policies.cs"); //documents.FirstOrDefault(x => x.Name == "GDPR.cs");[m
+[31m-[m
+[31m-            if (document == null)[m
+[31m-            {[m
+[31m-                return;[m
+[31m-            }[m
+[31m-[m
+[31m-            var treeAsync = await document.GetSyntaxTreeAsync();[m
+[31m-            var classes = treeAsync.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>();[m
+[31m-            var semanticModel = await document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);[m
+[31m-[m
+[31m-            if (semanticModel == null || classes == null)[m
+[31m-            {[m
+[31m-                return;[m
+[31m-            }[m
+[31m-[m
+[31m-            var symbols = classes.Select(x => semanticModel.GetDeclaredSymbol(x));[m
+[31m-            if (!symbols.Any())[m
+[31m-            {[m
+[31m-                return;[m
+[31m-            }[m
+[31m-[m
+[31m-            INamedTypeSymbol typeNamePII = semanticModel.Compilation.GetTypeByMetadataName(TypeNames.PIIAttribute);[m
+[31m-            INamedTypeSymbol typeNameInterface = semanticModel.Compilation.GetTypeByMetadataName(TypeNames.IGDPRPolicies);[m
+[31m-            INamedTypeSymbol typeNameAttribute = semanticModel.Compilation.GetTypeByMetadataName(TypeNames.GDPRPoliciesAttribute);[m
+[31m-            var gdprPolicyClass = symbols.FirstOrDefault(x => x.Interfaces.Contains(typeNameInterface) && x.HasAttribute(typeNameAttribute));[m
+[31m-            if (gdprPolicyClass == null)[m
+[31m-            {[m
+[31m-                return;[m
+[31m-            }[m
+[31m-[m
+[31m-            var names = gdprPolicyClass.GetMembers().Cast<IMethodSymbol>();[m
+[31m-            var types = gdprPolicyClass.GetTypeMembers();[m
+[31m-[m
+[31m-            var method = names.FirstOrDefault(x => x.MetadataName == "GeneratePolicies");[m
+[31m-[m
+[31m-            if (method == null)[m
+[31m-            {[m
+[31m-                return;[m
+[31m-            }[m
+[31m-[m
+[31m-            var syntaxReference = method.DeclaringSyntaxReferences.First();[m
+[31m-            var node = await syntaxReference.GetSyntaxAsync();[m
+[31m-            var block = node.ChildNodes().OfType<BlockSyntax>().FirstOrDefault();[m
+[31m-[m
+[31m-            var oldSpan = block.Span;[m
+[31m-            var statement = ImmutableArray.Create(SyntaxFactory.ParseStatement($"list.Add(new Policy(purpose: \"{argument.GetValueOrDefault("purpose")}\", pii: \"{argument.GetValueOrDefault("pii")}\"));\n")).ToArray();[m
+[31m-            var newBlock = block.AddStatements(statement);[m
+[31m-[m
+[31m-            context.RegisterCodeFix([m
+[31m-                CodeAction.Create([m
+[31m-                    title: title,[m
+[31m-                    createChangedDocument: c => AddDocument(document, oldSpan, newBlock, c),[m
+[31m-                    equivalenceKey: title),[m
+[31m-                diagnostic);[m
+         }[m
+ [m
+         private async Task<Document> AddDocument(Document document, TextSpan span, BlockSyntax block1, CancellationToken cancellationToken)[m

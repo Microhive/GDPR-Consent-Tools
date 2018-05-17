@@ -10,7 +10,7 @@ using System;
 
 namespace GDPRConsentTools
 {
-    [DiagnosticAnalyzer("", LanguageNames.CSharp)]
+    [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class ResourceAnalyzer : ResourceAnalyzerBase
     {
         public ResourceAnalyzer()

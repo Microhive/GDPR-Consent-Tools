@@ -25,27 +25,31 @@ namespace GDPRConsentTools
         {
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-            var diagnostic = context.Diagnostics.First();
-            var diagnosticSpan = diagnostic.Location.SourceSpan;
+            var diagnostics = context.Diagnostics;
 
-            // Find the type declaration identified by the diagnostic.
-            var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().First();
+            foreach (var diagnostic in diagnostics)
+            {
+                var diagnosticSpan = diagnostic.Location.SourceSpan;
 
-            var syntaxTree = await context.Document.GetSyntaxTreeAsync(context.CancellationToken);
-            var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken);
-            var compilation = semanticModel.Compilation;
+                // Find the type declaration identified by the diagnostic.
+                var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().First();
 
-            INamedTypeSymbol purposeTypeSymbol = compilation.GetTypeByMetadataName(TypeNames.PurposeAttribute);
-            var method = semanticModel.GetDeclaredSymbol(declaration, context.CancellationToken);
-            var attributes = method.GetAttributes();
+                var syntaxTree = await context.Document.GetSyntaxTreeAsync(context.CancellationToken);
+                var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken);
+                var compilation = semanticModel.Compilation;
 
-            var pii = context.Diagnostics.FirstOrDefault().Properties["pii"];
+                INamedTypeSymbol purposeTypeSymbol = compilation.GetTypeByMetadataName(TypeNames.PurposeAttribute);
+                var method = semanticModel.GetDeclaredSymbol(declaration, context.CancellationToken);
+                var attributes = method.GetAttributes();
 
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    title: DiagnosticDescriptors.GDPR1004_MethodAccessingPIIMustHavePurpose.Title.ToString(),
-                    createChangedDocument: c => UpdateAttribute(context.Document, declaration, "", pii, c)),
-                diagnostic);
+                var pii = context.Diagnostics.FirstOrDefault().Properties["pii"];
+
+                context.RegisterCodeFix(
+                    CodeAction.Create(
+                        title: DiagnosticDescriptors.GDPR1004_MethodAccessingPIIMustHavePurpose.Title.ToString(),
+                        createChangedDocument: c => UpdateAttribute(context.Document, declaration, "", pii, c)),
+                    diagnostic);
+            }
         }
 
         private async Task<Document> UpdateAttribute(Document document, MethodDeclarationSyntax declaration, string purpose, string pii, CancellationToken cancellationToken)

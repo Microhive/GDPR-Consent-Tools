@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IdentityTest.Models;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace GDPR.Model
@@ -14,6 +15,6 @@ namespace GDPR.Model
         [Required]
         public string ApplicationUserId { get; set; }
 
-        //public virtual ApplicationUser ApplicationUser { get; set; }
+        public virtual ApplicationUser ApplicationUser { get; set; }
     }
 }

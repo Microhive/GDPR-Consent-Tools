@@ -7,7 +7,7 @@
 }
 <h2>@ViewData["Title"]</h2>
 <p>
-    Enter new Purpose Title.
+    List of business processes you can opt-in.
 </p>
 <div asp-validation-summary="All"></div>
 <form method="POST">
@@ -20,12 +20,7 @@
             @Html.HiddenFor(x => @Model.Purposes[i].Value)
             @Html.HiddenFor(y => @Model.Purposes[i].Text)
         </div>
-        @*<div class="checkbox">
-                <label>
-                    <input type="checkbox" name="Purposes[@i]" value="@Model.Purposes[i].Value" @(Model.Purposes[i].Selected ? "checked" : "") /> @Model.Purposes[i].Text
-                </label>
-            </div>*@
     }
 
-    <input type="submit" />
+    <input type="submit" value="I consent"/>
 </form>

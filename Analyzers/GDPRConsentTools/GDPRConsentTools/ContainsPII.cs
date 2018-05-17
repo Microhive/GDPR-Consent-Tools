@@ -59,9 +59,14 @@ namespace GDPRConsentTools
                         continue;
                     }
 
-                    if (typeSymbol.HasAttribute(piiTypeSymbol))
+                    // If generic named type<T>, get type of T.
+                    INamedTypeSymbol namedType = (INamedTypeSymbol)typeSymbol;
+                    ITypeSymbol type = namedType.TypeArguments.FirstOrDefault();
+                    var symbol = type ?? typeSymbol;
+
+                    if (symbol.HasAttribute(piiTypeSymbol))
                     {
-                        foreach (var declaredAttribute in typeSymbol.GetAttributes())
+                        foreach (var declaredAttribute in symbol.GetAttributes())
                         {
                             if (declaredAttribute.AttributeClass == piiTypeSymbol)
                             {
@@ -77,7 +82,12 @@ namespace GDPRConsentTools
                         }
                     }
                 }
-                
+
+                if (pii.Count() == 0)
+                {
+                    return;
+                }
+
                 var builder = ImmutableDictionary.CreateBuilder<string, string>();
                 builder["pii"] = string.Join(",", pii);
                 var properies = builder.ToImmutable();

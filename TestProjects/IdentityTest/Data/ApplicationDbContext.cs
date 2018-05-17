@@ -24,8 +24,7 @@ namespace IdentityTest.Data
 
         public IQueryable<ApplicationUser> ApplicationUserPurpose(string purpose)
         {
-            var p = this.Purposes.FirstOrDefault(x => x.Title.ToLower() == purpose.ToLower());
-            return this.ApplicationUser.Where(x => x.Consents.Select(c => c.Id).Contains(p.Id));
+            return this.ApplicationUser.Where(x => x.Consents.Any(c => c.Purpose.Title.ToLower() == purpose.ToLower()));
         }
 
         public DbSet<ApplicationUser> ApplicationUser { get; set; }

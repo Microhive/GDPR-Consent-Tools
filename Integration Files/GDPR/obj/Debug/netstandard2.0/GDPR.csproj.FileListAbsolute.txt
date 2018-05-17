@@ -1,0 +1,4 @@
+C:\repos\GDPR-Consent-Tools\Integration Files\GDPR\obj\Debug\netstandard2.0\GDPR.csprojResolveAssemblyReference.cache
+C:\repos\GDPR-Consent-Tools\Integration Files\GDPR\obj\Debug\netstandard2.0\GDPR.csproj.CoreCompileInputs.cache
+C:\repos\GDPR-Consent-Tools\Integration Files\GDPR\obj\Debug\netstandard2.0\GDPR.AssemblyInfoInputs.cache
+C:\repos\GDPR-Consent-Tools\Integration Files\GDPR\obj\Debug\netstandard2.0\GDPR.AssemblyInfo.cs

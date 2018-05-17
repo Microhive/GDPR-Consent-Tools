@@ -4,7 +4,7 @@ using System;
 
 namespace GDPR.Attributes
 {
-    public class PurposeAttribute : Attribute, IActionFilter
+    public class PurposeAttribute : Attribute
     {
         public string Purpose { get; set; }
 
@@ -14,18 +14,6 @@ namespace GDPR.Attributes
         {
             Purpose = name;
             PII = pii;
-        }
-
-        public void OnActionExecuting(ActionExecutingContext context)
-        {
-            var controller = (IGDPRController)context.Controller;
-            controller.CurrentPurpose = Purpose;
-        }
-
-        public void OnActionExecuted(ActionExecutedContext context)
-        {
-            var controller = context.Controller as IGDPRController;
-            controller.CurrentPurpose = "";
         }
     }
 }
